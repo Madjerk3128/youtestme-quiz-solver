@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTest.me Quiz Solver & Answer Viewer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glow-green {
+      box-shadow: 0 0 20px -3px rgba(34, 197, 94, 0.25);
+    }
+    .glow-blue {
+      box-shadow: 0 0 30px -5px rgba(56, 189, 248, 0.3);
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-100 antialiased p-4 md:p-8">
+  <div class="max-w-4xl mx-auto space-y-8">
+    
+    <!-- Top Header -->
+    <header class="text-center space-y-3 pt-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-400 text-xs font-semibold tracking-wide uppercase">
+        <span>🎭</span> Don't Block Me Quiz Solver
+      </div>
+      <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400">
+        YouTest.me Answer Revealer
+      </h1>
+      <p class="text-slate-400 text-sm md:text-base max-w-lg mx-auto">
+        Paste any <code class="text-sky-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">block.youtest.me</code> quiz link below to uncover 100% of the creator's true answers instantly.
+      </p>
+    </header>
+
+    <!-- Input Box Card -->
+    <section class="glass-card rounded-2xl p-6 md:p-8 glow-blue shadow-2xl relative overflow-hidden">
+      <div class="space-y-4">
+        <label for="quizInput" class="block text-sm font-semibold text-slate-200">
+          Enter Quiz Link or ID
+        </label>
+        
+        <div class="relative flex flex-col md:flex-row items-stretch gap-3">
+          <div class="relative flex-1">
+            <input 
+              type="text" 
+              id="quizInput" 
+              placeholder="e.g. https://block.youtest.me/find?id=LMC96Xp&q=f" 
+              class="w-full pl-11 pr-24 py-3.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all text-sm md:text-base"
+            />
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">🔗</span>
+            <button 
+              id="pasteBtn" 
+              type="button" 
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-700 transition"
+            >
+              Paste
+            </button>
+          </div>
+
+          <button 
+            id="solveBtn" 
+            class="px-7 py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition transform active:scale-95 flex items-center justify-center gap-2 text-sm md:text-base"
+          >
+            <span id="btnIcon">🔍</span>
+            <span id="btnText">Reveal Answers</span>
+          </button>
+        </div>
+
+        <!-- Quick Demo Pill -->
+        <div class="flex items-center gap-2 pt-1">
+          <span class="text-xs text-slate-400">Quick Test:</span>
+          <button 
+            id="demoBtn"
+            class="text-xs text-sky-400 hover:text-sky-300 underline font-medium"
+          >
+            Load Swarnaa's Quiz (LMC96Xp)
+          </button>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="errorAlert" class="hidden p-4 rounded-xl bg-red-950/50 border border-red-500/30 text-red-200 text-sm">
+          <span class="font-bold mr-1">⚠️ Error:</span> <span id="errorMsg">Could not load answers.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz Results Section -->
+    <section id="resultsSection" class="hidden space-y-6">
+      
+      <!-- Creator Profile Card -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-700/50">
+        <div class="flex items-center gap-4 text-center sm:text-left">
+          <div id="avatarBg" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-2xl shadow-lg">
+            <span id="avatarIcon">👩</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 justify-center sm:justify-start">
+              <h2 id="creatorName" class="text-xl font-bold text-white">Swarnaa</h2>
+              <span id="genderBadge" class="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-medium">female</span>
+            </div>
+            <p id="creatorMeta" class="text-xs text-slate-400 mt-1">Country: IN • 10 Questions Answered</p>
+          </div>
+        </div>
+
+        <button 
+          id="copyAllBtn"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold transition"
+        >
+          <span>📋</span>
+          <span id="copyBtnText">Copy All 10 Answers</span>
+        </button>
+      </div>
+
+      <!-- Answers List -->
+      <div id="answersList" class="space-y-4">
+        <!-- Dynamically injected cards -->
+      </div>
+    </section>
+
+    <!-- Bookmarklet & Tips Section -->
+    <section class="glass-card rounded-2xl p-6 md:p-8 space-y-4 border border-slate-800">
+      <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+        <span>⚡</span> Instant In-Browser Bookmarklet
+      </h3>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Want to see the answers directly while playing on <code class="text-sky-300">block.youtest.me</code>? Drag this bookmarklet button to your browser bookmarks bar! Whenever you are on a quiz, just click the bookmark to popup all the answers!
+      </p>
+      
+      <div class="pt-2">
+        <a 
+          href="javascript:(function(){try{const d=JSON.parse(localStorage.getItem('DBM_player_userData'));if(!d||!d.userQuesAnsData){alert('No quiz data found in localStorage. Make sure you have opened a quiz page first!');return;}alert('Quiz Creator: '+d.userName+'\n\nCheck DevTools Console (F12) for the complete list of answers!');console.table(d.userQuesAnsData);}catch(e){alert('Error: '+e.message);}})();" 
+          class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md cursor-grab active:cursor-grabbing border border-purple-400/30"
+          title="Drag me to your bookmarks bar!"
+        >
+          <span>⭐</span> Drag me: [YouTest.me Answers]
+        </a>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-500 py-4">
+      Built with ❤️ for educational & fun testing • Permanent GitHub link
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

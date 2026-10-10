@@ -1,0 +1,21 @@
+{
+  "name": "youtestme-quiz-solver",
+  "version": "1.0.0",
+  "description": "Instant quiz solver and answer viewer for block.youtest.me quizzes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "youtestme",
+    "quiz-solver",
+    "block-youtest-me"
+  ],
+  "author": "Madjerk3128",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
