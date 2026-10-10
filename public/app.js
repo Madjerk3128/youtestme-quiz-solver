@@ -20,6 +20,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentAnswersData = null;
 
+  // Preloaded Swarnaa Quiz Data (Offline / GitHub Pages fallback)
+  const SWARNAA_CACHED_DATA = {
+    success: true,
+    quizId: "LMC96Xp",
+    creator: {
+      name: "Swarnaa",
+      gender: "female",
+      country: "IN",
+      language: "en"
+    },
+    totalQuestions: 10,
+    answers: [
+      {
+        number: 1,
+        questionId: "24",
+        question: "When did Swarnaa usually study for exams? 📝",
+        chosenIndex: 1,
+        correctAnswer: "The night before 🌙",
+        allOptions: ["Days in advance 📚", "The night before 🌙", "5 minutes before 😭", "Didn't study 💀"]
+      },
+      {
+        number: 2,
+        questionId: "41",
+        question: "Which cartoon does Swarnaa like most? 📺",
+        chosenIndex: 0,
+        correctAnswer: "Shinchan 😂",
+        allOptions: ["Shinchan 😂", "Doraemon 🤖", "Ninja Hattori 🥷", "Chhota Bheem 💪", "Motu Patlu 🤩", "Oggy and the Cockroaches 😆", "Tom and Jerry 🐱", "Pokémon ⚡", "Ben 10 👽", "SpongeBob SquarePants 🧽", "Naruto 🍥", "Dragon Ball Z 🐉"]
+      },
+      {
+        number: 3,
+        questionId: "459",
+        question: "What’s Swarnaa’s go-to sweet or tangy treat? 🍬",
+        chosenIndex: 8,
+        correctAnswer: "KitKat Chocolate 🍫",
+        allOptions: ["Pulse Kachcha Aam 🥭", "Mango Bite 🟡", "Melody 🍫", "Alpenliebe Gold 🍮", "Alpenliebe Juzt Jelly Strawberry 🍓", "Poppins 🌈", "Boomer bubble gum 🫧", "Dairy Milk Chocolate 🍫", "KitKat Chocolate 🍫", "Center Fresh 🫧"]
+      },
+      {
+        number: 4,
+        questionId: "43",
+        question: "What was Swarnaa's favorite game as a kid? 🛝",
+        chosenIndex: 2,
+        correctAnswer: "Badminton 🏸",
+        allOptions: ["Hide-and-seek 🫣", "Tag 🏃", "Badminton 🏸", "Jump rope 🪢", "Ludo 🎲", "Carrom 🎯", "Snakes and Ladders 🐍", "Rock Paper Scissors ✂️"]
+      },
+      {
+        number: 5,
+        questionId: "10",
+        question: "What’s Swarnaa’s bad habit? 😬",
+        chosenIndex: 4,
+        correctAnswer: "Scrolling on her phone 📱",
+        allOptions: ["Forgetting passwords 🔐", "Overthinking everything 🧠", "Staying up too late 🌙", "Shopping too much 🛍️", "Scrolling on her phone 📱", "Eating too many snacks 🍫", "Sleeping too much 😴", "Biting her nails 😬", "Chewing on pens 🖊️"]
+      },
+      {
+        number: 6,
+        questionId: "34",
+        question: "How does Swarnaa usually text? 📱",
+        chosenIndex: 0,
+        correctAnswer: "Lots of messages in a row 💬",
+        allOptions: ["Lots of messages in a row 💬", "One long message 📝"]
+      },
+      {
+        number: 7,
+        questionId: "36",
+        question: "What's Swarnaa's favorite fast food? 🍔",
+        chosenIndex: 11,
+        correctAnswer: "Biryani 🍲",
+        allOptions: ["Burger 🍔", "Pizza 🍕", "Momos 🥟", "Pani Puri 😋", "Samosa 🥟", "Vada Pav 🌭", "Masala Maggi 🍜", "Chow Mein 🍝", "Manchurian 🥡", "Pav Bhaji 🍛", "Kathi Roll 🌯", "Biryani 🍲"]
+      },
+      {
+        number: 8,
+        questionId: "18",
+        question: "What position does Swarnaa usually sleep in? 💤",
+        chosenIndex: 0,
+        correctAnswer: "On her side 😴",
+        allOptions: ["On her side 😴", "On her stomach 🛏️", "On her back 😌"]
+      },
+      {
+        number: 9,
+        questionId: "22",
+        question: "How fast does Swarnaa usually eat? 🍽️",
+        chosenIndex: 1,
+        correctAnswer: "Really slow 🐢",
+        allOptions: ["Super fast ⚡", "Really slow 🐢"]
+      },
+      {
+        number: 10,
+        questionId: "15",
+        question: "Where did Swarnaa usually sit in class? 🏫",
+        chosenIndex: 1,
+        correctAnswer: "Back 😎",
+        allOptions: ["Front 🥇", "Back 😎"]
+      }
+    ]
+  };
+
+  function extractQuizId(input) {
+    if (!input) return null;
+    const str = input.trim();
+    const urlMatch = str.match(/[?&]id=([a-zA-Z0-9_-]+)/i);
+    if (urlMatch) return urlMatch[1];
+    const idMatch = str.match(/^[a-zA-Z0-9_-]{4,20}$/);
+    if (idMatch) return idMatch[0];
+    const pathMatch = str.match(/\/([a-zA-Z0-9_-]{4,20})(?:[?#]|$)/);
+    if (pathMatch) return pathMatch[1];
+    return str;
+  }
+
   // Paste from clipboard
   pasteBtn.addEventListener('click', async () => {
     try {
@@ -54,19 +161,41 @@ document.addEventListener('DOMContentLoaded', () => {
     setLoading(true);
     hideError();
 
-    try {
-      // Determine endpoint: call /api/solve with fallback
-      const apiUrl = `/api/solve?url=${encodeURIComponent(rawVal)}`;
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+    const quizId = extractQuizId(rawVal);
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to retrieve quiz details.');
+    // Fast local match if it's the demo / Swarnaa quiz
+    if (quizId && quizId.toLowerCase() === 'lmc96xp') {
+      setTimeout(() => {
+        renderResults(SWARNAA_CACHED_DATA);
+        setLoading(false);
+      }, 400);
+      return;
+    }
+
+    try {
+      // 1. Try local or Vercel /api/solve endpoint
+      const apiUrl = `/api/solve?url=${encodeURIComponent(rawVal)}`;
+      let data = null;
+      try {
+        const response = await fetch(apiUrl);
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (err) {
+        // Ignored, proceed to proxy
       }
 
-      renderResults(data);
+      if (data && data.success) {
+        renderResults(data);
+        return;
+      }
+
+      // 2. On static GitHub Pages without backend:
+      showError(
+        'For new quizzes, please use the in-browser Bookmarklet below directly on block.youtest.me to reveal answers instantly!'
+      );
     } catch (err) {
-      showError(err.message || 'Network error or unable to contact server.');
+      showError(err.message || 'Unable to retrieve quiz answers.');
     } finally {
       setLoading(false);
     }
@@ -76,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentAnswersData = data;
     const { creator, answers, totalQuestions } = data;
 
-    // Creator info
     creatorName.textContent = creator.name || 'Quiz Creator';
     genderBadge.textContent = creator.gender || 'unknown';
     
@@ -92,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     creatorMeta.textContent = `Region: ${creator.country || 'IN'} • Language: ${creator.language || 'en'} • ${totalQuestions} Questions`;
 
-    // Render answer cards
     answersList.innerHTML = '';
     answers.forEach((item) => {
       const card = document.createElement('div');
@@ -151,8 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resultsSection.classList.remove('hidden');
     copyBtnText.textContent = `Copy All ${answers.length} Answers`;
-    
-    // Smooth scroll down to results
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
